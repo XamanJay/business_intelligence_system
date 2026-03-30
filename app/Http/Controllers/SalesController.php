@@ -10,199 +10,207 @@ use App\Models\Cost;
 use App\Models\Employee;
 use App\Models\Client;
 use App\Models\Vsales;
-
-
-
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
+use Exception;
+use Log;
 
 class SalesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    private const EMPLOYEE_TYPE_CLOSER = 1;
+    private const EMPLOYEE_TYPE_LEADER = 6;
+    private const EMPLOYEE_TYPE_MESSENGER = 5;
+
     public function index()
     {
-       // dd('paso hasta aqui');
+        try {
+            $fact_sales = Vsales::all()->sortByDesc('id');
 
-        //$fact_sales = Fact_sale::all();
-        $fact_sales = Vsales::all()->sortByDesc('id');
-
-        return view('sales.index',[
-            'fact_sales' => $fact_sales
-        ] ); 
+            return view('sales.index', [
+                'fact_sales' => $fact_sales
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error in SalesController@index: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al cargar ventas. Por favor intente nuevamente.');
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        /*$fact_sales = Fact_sale::all();*/
-        $process = Process::all();
-        $costs = Cost::all();
-        //$employees = Employee::all();
-        $employees = Employee::where ('cat_type_employees_id',1)->get();
-        $client = Client::all();
-        // dd($employees);
-        $employeess = Employee::where ('cat_type_employees_id',5)->get();
-        //dd($employeess);
-        $employeeesss = Employee::where ('cat_type_employees_id',6)->get();
+        try {
+            $process = Process::all();
+            $costs = Cost::all();
+            $employees = Employee::where('cat_type_employees_id', self::EMPLOYEE_TYPE_CLOSER)->get();
+            $client = Client::all();
+            $support_employees = Employee::where('cat_type_employees_id', self::EMPLOYEE_TYPE_MESSENGER)->get();
+            $leader_employees = Employee::where('cat_type_employees_id', self::EMPLOYEE_TYPE_LEADER)->get();
 
-        return view('sales.create',[
-            'process' => $process,
-            'costs' => $costs,
-            'employees' => $employees,
-            'client'   => $client,
-            'employeess' => $employeess,
-            'employeeesss' => $employeeesss
-        ] ); 
+            return view('sales.create', [
+                'process' => $process,
+                'costs' => $costs,
+                'employees' => $employees,
+                'client' => $client,
+                'employeess' => $support_employees,
+                'employeeesss' => $leader_employees
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error in SalesController@create: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al cargar formulario. Por favor intente nuevamente.');
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        
-        $xLead =    $request->input('lead');
-        
-        //dd($enjoyer);
-        //dd('paso hasta aqui 1208');
-        $xLead_found = Fact_sale::where('lead',$xLead) ->get() ->count();
-
-        //dd($xLead_found);
-    
-        if ( $xLead_found == 1){
-            
-            return redirect('/sales/create')->with('message', 'El número de Lead ya existe. favor de recapturar con un numero de lead nuevo y valido');            
-        
-        }
-        else{
-
-                /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-            $fact_sales = Fact_sale::create([    
-                'cat_employees_id'         => $request->input('cat_employees_id'),
-                'cat_employees_2_id'       => $request->input('cat_employees_2_id'),
-                'cat_employees_3_id'       => $request->input('cat_employees_3_id'),
-                'link_lawruler'            => $request->input('link_lawruler'),
-                'lead'                     => $request->input('lead'),
-                'cat_type_process_id'      => $request->input('cat_type_process_id'),
-                'cat_client_id'            => $request->input('cat_client_id'),
-                'link_payment_receipt'     => $request->input('link_payment_receipt'),
-                'consultation_cost_id'     => $request->input('consultation_cost_id'),
-                    'sale_date'                => $request->input('sale_date'),
-                    'day'                      => $request->input('day'),
-                    'month'                    => $request->input('month'),
-                    'year'                     => $request->input('year'),
-                    'ipaddress'                => $request->input('ipaddress'),
-                    'x_users_id'               => $request->input('x_users_id'),
-
-
-
-                
+        try {
+            $validatedData = $request->validate([
+                'cat_employees_id' => 'required|exists:employees,id',
+                'cat_employees_2_id' => 'nullable|exists:employees,id',
+                'cat_employees_3_id' => 'nullable|exists:employees,id',
+                'link_lawruler' => 'nullable|url',
+                'lead' => 'required|string|unique:fact_sales,lead',
+                'cat_type_process_id' => 'required|exists:processes,id',
+                'cat_client_id' => 'required|exists:clients,id',
+                'link_payment_receipt' => 'nullable|url',
+                'consultation_cost_id' => 'required|exists:costs,id',
+                'sale_date' => 'required|date',
+                'day' => 'required|integer|between:1,31',
+                'month' => 'required|integer|between:1,12',
+                'year' => 'required|integer|min:2000',
+                'ipaddress' => 'nullable|ip',
+                'x_users_id' => 'required|exists:xusers,id'
             ]);
 
+            $fact_sales = Fact_sale::create($validatedData);
 
+            Log::info('Sale created successfully', ['sale_id' => $fact_sales->id, 'lead' => $validatedData['lead']]);
 
-            //$fact_sales = Fact_sale::all();
             $fact_sales = Vsales::all()->sortByDesc('id');
-            return view('sales.index',[
-                'fact_sales' => $fact_sales
-            ] ); 
 
+            return view('sales.index', [
+                'fact_sales' => $fact_sales,
+                'message' => 'Venta registrada exitosamente'
+            ]);
+
+        } catch (ValidationException $e) {
+            Log::warning('Validation error in store: ' . json_encode($e->errors()));
+            return redirect('/sales/create')->withErrors($e->errors())->withInput();
+        } catch (Exception $e) {
+            Log::error('Error in SalesController@store: ' . $e->getMessage());
+            return redirect('/sales/create')->with('error', 'Error al registrar venta. Por favor intente nuevamente.');
         }
-
-
-
-
-        
-
-        
-       
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        try {
+            $fact_sales = Fact_sale::findOrFail($id);
+
+            return view('sales.show', [
+                'fact_sales' => $fact_sales
+            ]);
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Sale not found: ' . $id);
+            return redirect('/sales')->with('error', 'Venta no encontrada.');
+        } catch (Exception $e) {
+            Log::error('Error in SalesController@show: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al cargar venta.');
+        }
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
-        
-        $fact_sales = Fact_sale::find($id);
-        $process = Process::all();
-        $costs = Cost::all();
-        $employees = Employee::where ('cat_type_employees_id',1)->get();
-        $client = Client::all();
-        $employeess = Employee::where ('cat_type_employees_id',5)->get();
-        $cat_employees_id_closers = $fact_sales->cat_employees_id;
-        $cat_employees_id = $fact_sales['cat_employees_id'];
-        $employee1 = Employee::where ('id',$cat_employees_id)->get();
-        $cat_employees_3_id = $fact_sales['cat_employees_3_id'];
-        $employee3 = Employee::where ('id',$cat_employees_3_id)->get();
-        $cat_type_process_id = $fact_sales['cat_type_process_id'];
-        $process1 = Process::where ('id',$cat_type_process_id)->get();
-        $cat_client_id = $fact_sales['cat_client_id'];
-        $client1 = Client::where ('id',$cat_client_id)->get();
-        $consultation_cost_id = $fact_sales['consultation_cost_id'];
-        $cost1 = Cost::where ('id',$consultation_cost_id)->get();
+        try {
+            $fact_sales = Fact_sale::findOrFail($id);
+            $process = Process::all();
+            $costs = Cost::all();
+            $employees = Employee::where('cat_type_employees_id', self::EMPLOYEE_TYPE_CLOSER)->get();
+            $client = Client::all();
+            $support_employees = Employee::where('cat_type_employees_id', self::EMPLOYEE_TYPE_MESSENGER)->get();
 
+            $employee1 = Employee::findOrFail($fact_sales->cat_employees_id);
+            $employee3 = Employee::findOrFail($fact_sales->cat_employees_3_id);
+            $process1 = Process::findOrFail($fact_sales->cat_type_process_id);
+            $client1 = Client::findOrFail($fact_sales->cat_client_id);
+            $cost1 = Cost::findOrFail($fact_sales->consultation_cost_id);
 
-        //dd ($employee1);
-        
+            return view('sales.edit', [
+                'fact_sales' => $fact_sales,
+                'process' => $process,
+                'costs' => $costs,
+                'employees' => $employees,
+                'client' => $client,
+                'employeess' => $support_employees,
+                'employee1' => $employee1,
+                'employee3' => $employee3,
+                'process1' => $process1,
+                'client1' => $client1,
+                'cost1' => $cost1
+            ]);
 
-        return view('sales.edit',[
-            'fact_sales' => $fact_sales,
-            'process' => $process,
-            'costs' => $costs,
-            'employees' => $employees,
-            'client'   => $client,
-            'employeess' => $employeess,
-            'employee1' => $employee1,
-            'employee3' => $employee3,
-            'process1' => $process1,
-            'client1' => $client1,
-            'cost1' => $cost1
-        ] ); 
-
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Resource not found during edit: ' . $e->getMessage());
+            return redirect('/sales')->with('error', 'Registro no encontrado.');
+        } catch (Exception $e) {
+            Log::error('Error in SalesController@edit: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al cargar formulario de edición.');
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        $fact_sales = Fact_sale::where('id',$id)->update([    
-            'cat_employees_id'         => $request->input('cat_employees_id'),
-            'cat_employees_3_id'       => $request->input('cat_employees_3_id'),
-            'link_lawruler'            => $request->input('link_lawruler'),
-            'lead'                     => $request->input('lead'),
-            'cat_type_process_id'      => $request->input('cat_type_process_id'),
-            'cat_client_id'            => $request->input('cat_client_id'),
-            'link_payment_receipt'     => $request->input('link_payment_receipt'),
-            'consultation_cost_id'     => $request->input('consultation_cost_id')
-            
-        ]);
+        try {
+            $fact_sales = Fact_sale::findOrFail($id);
 
-        $fact_sales = Fact_sale::all();
+            $validatedData = $request->validate([
+                'cat_employees_id' => 'required|exists:employees,id',
+                'cat_employees_3_id' => 'nullable|exists:employees,id',
+                'link_lawruler' => 'nullable|url',
+                'lead' => 'required|string',
+                'cat_type_process_id' => 'required|exists:processes,id',
+                'cat_client_id' => 'required|exists:clients,id',
+                'link_payment_receipt' => 'nullable|url',
+                'consultation_cost_id' => 'required|exists:costs,id'
+            ]);
 
-        return view('sales.index',[
-            'fact_sales' => $fact_sales
-        ] ); 
-        
-        
+            $fact_sales->update($validatedData);
+
+            Log::info('Sale updated successfully', ['sale_id' => $fact_sales->id]);
+
+            $fact_sales = Vsales::all()->sortByDesc('id');
+
+            return view('sales.index', [
+                'fact_sales' => $fact_sales,
+                'message' => 'Venta actualizada exitosamente'
+            ]);
+
+        } catch (ValidationException $e) {
+            Log::warning('Validation error in update: ' . json_encode($e->errors()));
+            return redirect()->back()->withErrors($e->errors())->withInput();
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Sale not found for update: ' . $id);
+            return redirect('/sales')->with('error', 'Venta no encontrada.');
+        } catch (Exception $e) {
+            Log::error('Error in SalesController@update: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al actualizar venta.');
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        try {
+            $fact_sales = Fact_sale::findOrFail($id);
+            $fact_sales->delete();
+
+            Log::info('Sale deleted successfully', ['sale_id' => $id]);
+
+            return redirect('/sales')->with('message', 'Venta eliminada exitosamente');
+
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Sale not found for deletion: ' . $id);
+            return redirect('/sales')->with('error', 'Venta no encontrada.');
+        } catch (Exception $e) {
+            Log::error('Error in SalesController@destroy: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error al eliminar venta.');
+        }
     }
 }
