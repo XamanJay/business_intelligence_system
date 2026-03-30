@@ -1,0 +1,864 @@
+ 
+  
+▓ ✔️ Table:   fact_sales        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+	
+	id
+	lead
+	cat_employees_2_id
+	
+	* cat_employees_id				Nombre del vendedor  quien cierra la venta
+	* cat_employees_3_id			Nombre del vendedor con quiense comparte - messenger tem
+	* link_lawruler					insertar link de law ruler
+	* lead							lead
+	* cat_type_process_id			Tipo de tramite   vawa, vista u etc
+	* cat_client_id					Nombre del cliente
+	* link_payment_receipt			Recibo de pago
+	* consultation_cost_id			Monto de la consulta
+	
+	sale_date
+	day
+	month
+	year
+	active
+	observations
+	created_at
+	updated_at
+	
+	
+▓ ✔️ Table:   cat_type_process        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓	
+
+	id
+	description
+	observations
+	active
+	created_at
+	updated_at
+	
+▓ ✔️ Table:   cat_consultation_cost        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓		
+
+	id
+	consultation_cost
+	commissions
+	observations
+	active
+	created_at
+	updated_at
+
+▓ ✔️ Table:   cat_employees       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+		id
+		name
+		last_name
+		second_last_name
+		email
+		cat_type_employees_id
+		active
+		created_at
+		updated_at
+
+
+	
+▓ ✔️ Table:   x_users       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+id
+cat_employees_id
+x_profiles_id
+user
+passswwword
+active
+observations
+created_at
+updated_at
+
+
+▓ ✔️ Table:   x_profiles       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+id
+profile
+observations
+active
+created_at
+up
+dated_at
+
+
+
+
+▓ ✔️ Table:   v__xusers       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+CREATE VIEW `v__xusers`
+AS
+SELECT x_users.id,
+		x_users.cat_employees_id,
+		x_users.x_profiles_id,
+		x_users.user,
+		x_users.passswwword,
+		x_users.active,
+		x_users.observations,
+		x_users.created_at,
+		cat_employees.name,
+		cat_employees.last_name,
+		x_profiles.profile
+FROM 	x_users
+INNER JOIN cat_employees ON (x_users.cat_employees_id = cat_employees.id)
+INNER JOIN x_profiles ON (x_users.x_profiles_id = x_profiles.id);
+
+▓ ✔️ Table:   v__sales        ▓ok▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+CREATE VIEW `v__sales`
+AS
+SELECT     fact_sales.id,
+			  fact_sales.lead,
+			  fact_sales.cat_employees_id,
+			  fact_sales.cat_employees_2_id,
+			  fact_sales.cat_employees_3_id,
+			  fact_sales.link_lawruler,
+			  fact_sales.cat_type_process_id,
+			  fact_sales.cat_client_id,
+			  fact_sales.link_payment_receipt,
+			  fact_sales.consultation_cost_id,
+			  fact_sales.sale_date,
+			  fact_sales.day,
+			  fact_sales.month,
+			  fact_sales.year,
+			  fact_sales.ipaddress,
+			  fact_sales.x_users_id,
+			  fact_sales.active,
+			  fact_sales.observations,
+			  fact_sales.created_at,
+			  cat_employees.id AS 'id_closer',
+			  cat_employees.name AS 'name_closer',
+			  cat_employees.last_name 'lastname_closer',
+			  cat_employees.email AS 'email_closer',
+			  cat_employees2.id AS 'id_leader',
+			  cat_employees2.name AS 'name_leader',
+			  cat_employees2.last_name AS 'lastname_leader',
+			  cat_employees2.email AS 'email_leader',
+			  cat_employees3.id AS 'id_messenger',
+			  cat_employees3.name AS 'name_messenger',
+			  cat_employees3.last_name AS 'lastname_messenger',
+			  cat_employees3.email AS 'email_messenger',
+			  cat_type_process.description 'process',
+			  cat_clients.name AS 'name_client',
+			  cat_clients.last_name AS 'lastname_client',
+			  cat_clients.second_last_name 'secondlastname_client',
+			  cat_clients.phone AS 'phone_client',
+			  cat_consultation_cost.consultation_cost--
+FROM       fact_sales
+INNER JOIN cat_employees ON (fact_sales.cat_employees_id = cat_employees.id)
+INNER JOIN cat_employees cat_employees2 ON (fact_sales.cat_employees_2_id = cat_employees2.id)
+INNER JOIN cat_employees cat_employees3 ON (fact_sales.cat_employees_3_id = cat_employees3.id)
+INNER JOIN cat_type_process ON (fact_sales.cat_type_process_id = cat_type_process.id)
+INNER JOIN cat_clients ON (fact_sales.cat_client_id = cat_clients.id)
+INNER JOIN cat_consultation_cost ON (fact_sales.consultation_cost_id = cat_consultation_cost.id);
+
+
+
+
+▓ ✔️ Table:   v__employees        ▓ok▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+CREATE VIEW `v__employees`
+AS
+SELECT cat_employees.id,
+cat_employees.name,
+cat_employees.last_name,
+cat_employees.second_last_name,
+cat_employees.email,
+cat_employees.active,
+cat_employees.observations,
+cat_type_employees.id AS cat_type_employees_id,
+cat_type_employees.description AS cat_type_employees_description
+FROM cat_employees
+INNER JOIN cat_type_employees ON (cat_employees.cat_type_employees_id = cat_type_employees.id)
+
+
+
+
+
+
+▓ ✔️ Table:  v__salesx        ▓ok▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+CREATE VIEW `v__salesx`
+AS
+SELECT     fact_sales.id,
+		   fact_sales.lead AS 'Lead',
+		   fact_sales.cat_employees_id,
+		   fact_sales.cat_employees_2_id,
+		   fact_sales.cat_employees_3_id,
+		   fact_sales.link_lawruler,
+		   fact_sales.cat_type_process_id,
+		   fact_sales.cat_client_id,
+		   fact_sales.link_payment_receipt,
+		   fact_sales.consultation_cost_id,
+		   fact_sales.sale_date,
+		   fact_sales.day,
+		   fact_sales.month,
+		   fact_sales.year,
+		   fact_sales.ipaddress,
+		   fact_sales.x_users_id,
+		   fact_sales.active,
+		   fact_sales.observations,
+		   fact_sales.created_at AS 'Fecha',
+		   cat_employees.id AS 'id_closer',
+		   CONCAT(cat_employees.name, ' ', cat_employees.last_name) AS 'Closer',
+		   cat_employees.name AS 'name_closer',
+		   cat_employees.last_name 'lastname_closer',
+		   cat_employees.email AS 'email_closer',
+		   CONCAT(cat_employees2.name, ' ', cat_employees2.last_name) AS 'Team leader',
+		   cat_employees2.id AS 'id_leader',
+		   cat_employees2.name AS 'name_leader',
+		   cat_employees2.last_name AS 'lastname_leader',
+		   cat_employees2.email AS 'email_leader',
+  		   CONCAT(cat_employees3.name, ' ', cat_employees3.last_name) AS 'Messenger team',
+		   cat_employees3.id AS 'id_messenger',
+		   cat_employees3.name AS 'name_messenger',
+		   cat_employees3.last_name AS 'lastname_messenger',
+		   cat_employees3.email AS 'email_messenger',
+		   cat_type_process.description AS 'Tramite',
+		   cat_clients.name AS 'name_client',
+		   cat_clients.last_name AS 'lastname_client',
+		   cat_clients.second_last_name 'secondlastname_client',
+		   cat_clients.phone AS 'phone_client',
+		   cat_consultation_cost.consultation_cost AS 'Costo',
+		   cat_consultation_cost.commissions AS 'Comisión'
+FROM       fact_sales
+INNER JOIN cat_employees ON (fact_sales.cat_employees_id = cat_employees.id)
+INNER JOIN cat_employees cat_employees2 ON (fact_sales.cat_employees_2_id = cat_employees2.id)
+INNER JOIN cat_employees cat_employees3 ON (fact_sales.cat_employees_3_id = cat_employees3.id)
+INNER JOIN cat_type_process ON (fact_sales.cat_type_process_id = cat_type_process.id)
+INNER JOIN cat_clients ON (fact_sales.cat_client_id = cat_clients.id)
+INNER JOIN cat_consultation_cost ON (fact_sales.consultation_cost_id = cat_consultation_cost.id);
+
+/* =====-----=====-----=====-----=====-----=====-----=====-----=====-----=====-----=====-----=====-----=====-----=====-----=====-----=====-----*/
+ SELECT * FROM fact_sales WHERE id IN(34,41);
+
+ http://business_intelligence_system.test/sales   ok good 
+▓ ✔️📌▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓	
+
+
+05.06.24
+📌 mysql	cancun -->	Cancun.,10
+CREATE USER 'cancun'@'%' IDENTIFIED VIA mysql_native_password USING '***';GRANT ALL PRIVILEGES ON *.* TO 'cancun'@'%' REQUIRE NONE WITH GRANT OPTION MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;GRANT ALL PRIVILEGES ON `zscxxcmy\_bd`.* TO 'cancun'@'%';
+
+📌	Agent --> sell -->comissions
+📌	Date    Agent     
+📌	
+	Agents ↓   	Leaders ↓	4 jun 2024 -4 jun 2024 ↓
+
+Number. | Leader. | Agent.	| Tot Sales. |	Tot comissions. | Average Sales. | Average Comissions. | % Sales |	%Comissions | 
+
+
+04.06.24
+
+✔️	Change select by input for clients field 
+✔️  This new input it will save in Clients table. 
+✔️	and I will recover the client id, 
+✔️	and I will insert this id in the sales table. 
+📌
+📌
+
+03.06.24
+
+📌 for me, I need to know all sales process 
+📌 To show the system to sales manager and team leaders. for feedback
+📌 We have ready the new dashboards.
+📌 To send all users and passwords. 
+📌 To request capture the same sale in old form and new form. all sales agents. or one statistical sample.
+📌 And show results in both , old dashboards and new dashboards. 
+📌 igdwout, igdeood, igddcsys
+📌 To capture more mails and passwords, improve salesx.
+✔ Backup of my systems reinstall my xampp, 
+
+
+
+
+______________________________________________________ Gestion
+📌	To define roles (Who do what) ▓ 
+📌	To make one presentation to Eruvey and team leaders.
+📌	Send all users and passwords to Eruvey.
+📌	Install PowerBI
+📌  To make one dashboards or many dashboard of sales, equals or similar to currents
+✔  Important!!! the catalogs of posible clients. 
+______________________________________________________
+✔	Currently, How many sales per day? more or less 46 in the morning
+📌 I need to see how work the current dashboard of sales. 
+📌 I need one statistical sample of sales, for example 10% or 50 sales registry. 
+	and with this statistical sample to get totales. 
+📌	
+______________________________________________________
+📌4	One on line user manual, for sales 
+✔1	Para modificar una venta solo lo podra hacer el super administrador.
+✔2	El listado de ventas, por agente, el agente solo podra ver sus ventas.
+✔2.5 EL sa podra ver todas las venta$
+✔3 Al dar de alta una venta ya este por default el nombre del vendedor. 
+✔ Quitar que sea obligatorio el messenger team in insert of sales. 
+✔	Validar que la cadena de recibo de pago valide que tenga los caracteres suficientes. 
+	de un recibo de pago. 
+✔ Validar que sea una cadena valida para el campo de recibo de pago.
+✔ En nueva venta cuando captura un agente colocar el menu adecuado. 
+✔ Validar que sea numerico el valor de Costo de la consulta.
+✔ Checar lo de los clientes el formulario es el primer receptor del cliente. habra que hacer modificaciones...
+✔ Hacer un join concatenando nombre y apellido de los asesores esto para los reportes. 
+📌 Hacer un un reporte con powerbi para las ventas e incrustarlo en el sistema.
+📌5  Request one mysql user for only read permissions .
+📌6  Reques more images. 
+📌7  To make many many dashboards with powerbi. 
+📌	Generar un tablero de control que muestre las ventas en tiempo real. 
+✔ To put again my data  base local 
+✔8 Reinstall xampp. 
+
+📌______________________________________________________
+	
+📌______________________________________________________
+📌 To show dashboard to E
+✔	Install PowerBI
+📌	To fix errors
+📌	To get registry of real sales.
+📌  Exports real sales from google sheet to BIS DB
+📌	I need to see how work the current dashboard of sales. 
+📌	Currently, How many sales per day?
+	
+	I need one statistical sample of sales, for example 10% or 50 sales registry. 
+	and with this statistical sample to get totales. 
+📌	We can realease by parts.
+📌
+📌
+	
+📌 For Release the BIS 
+	All users with all passwords and email.
+	The database clean.
+	One on line user manual, for sales 
+	Remember It will necesary to make one data base backup.
+	Capacitation of teamleaders.
+	
+	Qi6lgGs7
+	
+	
+📌	One on line user manual, for sales 
+📌	Para modificar una venta solo lo podra hacer el super administrador.
+📌	El listado de ventas, por agente, el agente solo podra ver sus ventas.
+📌 Al dar de alta una venta ya este por default el nombre del vendedor. 
+📌 Quitar que sea obligatorio el messenger team in insert of sales. 
+📌	Validar que la cadena de recibo de pago valide que tenga los caracteres suficientes. 
+	de un recibo de pago. 
+📌  Request one mysql user for only read permissions .
+
+	
+
+📌	Instalar PowerBI.
+📌	Generar un set de pruebas.
+
+📌  Ponernos de acuerdo en la liberación 
+
+📌	I need 
+📌  Request one mysql user for only read permissions .
+📌  It will get all mails of all agents.
+📌	
+📌	 How many sales per day?
+📌	 I need to get all sales of yesterday, I mean of date 13/05/24.
+📌	 To show to Eruvey and Brenda. 
+📌	 How many sales per week?
+📌
+📌	I need to write one resume of my main activities.
+📌	https://descargarclientes.mendozafirm.com/
+📌	Comment the images, because we are in Cancun, the 
+📌	Request de installation of business intelligence. 
+📌 Show the wonderfull characteristics of dinamyc tables 
+📌 
+📌
+📌
+📌
+📌
+
+
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓	
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓	
+▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓	
+New menu, new controller (XuserController), I will use the Xuser Model, new folder Xuser, new 3 programs index,creat,edit, the similar create form of W,
+New path, 
+23.05.24
+Programs Edited
+📌	SalesController.php 
+📌
+📌
+📌
+📌
+
+
+06.05.24
+
+✔️	 Download all of FTP
+✔️  Overwrite all file edited in homeoffice
+✔️  Execute the new view
+
+✔️	Test 
+✔️	The user admin
+✔️  new employee
+✔️  new user
+✔️	new sale
+	Show detail in database of ip and id user 
+	show image responsivas
+	show this is MVC program , it´s mean the la parte de backend and front en estan separadas ademas de la programación en la BD.
+	
+	Define catalog of clients
+	Define the agents only can see one screen sales inserts 
+	Supervisor can see all screen except, new users for logins .
+	Admin it can see, all .
+	the images, marketing .
+	📌 .ico new image for title.
+	📌 Try execute the, mmm no, it can't be possible execute phyton in one server of laravel
+	📌 How filter, one query except, these for result set in selects inner update forms. 
+	📌 Validations for update programs.
+	📌 Request again the images.
+	📌 Start test.
+	📌 Create users for BI for BIS
+		(   Edgar_bi    Bu5ine551
+			Polo_bi	    Bu5ine552
+			Cris_bi     Bu5ine553
+			Alvaro_bi	Bu5ine554
+			Ema_bi		Bu5ine555
+				
+	📌 Create users for all openers.
+	📌 It will a good idea test with old sales for example the last week
+		with these sales to get total and compare with the 
+		numbers totals of old form and old dashboards. 
+	📌 It´ll create one web page for help.
+	📌 Reinstall xampp
+	📌 Test new image for the login,
+		Request images to marketing department.
+	
+	How fix the size of  one background image with css. 
+	
+	No mostrar todos los registros a todos los usuarios
+	Es obligatorio el messenger team?
+	
+	
+	SELECT *
+FROM employees
+WHERE employee_id NOT IN (
+    SELECT employee_id
+    FROM employees
+    WHERE employee_id = 1001
+);
+
+
+
+https://laravel.com/docs/10.x/collections
+The where method uses "loose" comparisons when checking item values, meaning a string with an integer value will be considered equal to an integer of the same value. Use the whereStrict method to filter using "strict" comparisons.
+
+Optionally, you may pass a comparison operator as the second parameter. Supported operators are: '===', '!==', '!=', '==', '=', '<>', '>', '<', '>=', and '<=':
+
+$collection = collect([
+    ['name' => 'Jim', 'deleted_at' => '2019-01-01 00:00:00'],
+    ['name' => 'Sally', 'deleted_at' => '2019-01-02 00:00:00'],
+    ['name' => 'Sue', 'deleted_at' => null],
+]);
+ 
+$filtered = $collection->where('deleted_at', '!=', null);
+ 
+$filtered->all();
+ 
+/*
+    [
+        ['name' => 'Jim', 'deleted_at' => '2019-01-01 00:00:00'],
+        ['name' => 'Sally', 'deleted_at' => '2019-01-02 00:00:00'],
+    ]
+*/
+	
+	
+	10V 
+	11S	I´ll continue with my dc,I'll convert from 9 to 10 versión., later I need parners for sells tours
+	12D
+	
+✔️	Update edit of fact_sales. 
+✔️	Insert 
+✔️	Request PowerBI     
+	
+✔️	Now BackUp business_intelligence_system of my pc
+✔️	Download all files and folders of server except vendor directory
+✔️	Upload all files of bis ,of my pc To the server except vendor.
+
+
+
+26.04.24
+📌	* Insert all fields/columns in create (dates, leader etc)
+		
+		Luis Adolfo Canto Martinez
+		Ana Cristina Ibarra Loza
+		Alejandro Corres de la Cruz
+		Manuel Alejandro Cortaza Bautista
+		Ivan Aaron Lopez Escarcega
+		Rosa Brenda Salcedo Silva
+
+		Carlos Gabriel Perez Gomez / Trainer 
+		Jehiberth Josejan Salinas Seijas / Trainer
+
+📌 * The fact_sales Join should show the last record inserted
+📌	To put correct mails , and names of leaders
+📌  Create correct view for fact_sales
+📌	To put correct view in the fact_sales index table
+📌  Install power BI
+
+
+
+
+25.04.24 
+
+To Put the view of users and think on form way for historyback
+It will be neccesary to define how will be the insert the clients by id or by input
+
+24.04.24
+
+✔ 1	Remarks for tomorrow , add  id_catalog of personal, to form create, create join of users, and create edit blade for users. 
+📌 2	dashboard with Karla
+📌 3	Speak with Ayde.
+📌
+
+
+22.04.24
+
+📌02*  25   2 Inserts, update, desabiliar user. CRUD for Users
+			I)  I will create the join beetwen  users and profiles 
+			II) I´m gonna make the updates for users.   
+✔ 01*  25   New validations, with https, and it will necesary check that the systems insert only/unique LEAD
+	
+📌   30 Request all import	emails of all sales mans
+📌   30	Test with real users, Check the process of real inserts with real sales mans
+📌   30	To fix filters and change designg to bootstrap
+📌	  Agregar la fecha de actualizacion cuando se edite un registro de usuarios. esto para cuando se desabilite un usuario. 
+		
+
+📌   02	Logic for perfiles, The modification fact_sales only for Supervisor 
+📌   02 1Request Image and put image
+
+
+18.04.24
+📌	Remember to change ids of consultations cost
+📌  Remember add new field/column of x_users_id for the fact_sales and ip_client column 
+📌 Too save/insert rest of fields id, dates ,ips for fact_sales 
+17.04.24
+
+📌	Remember to change the id's of Costs
+📌  The Insert program must save ip adress, user in the login, day, month, year. 
+
+
+Asunto: Solicitud de Diseño de Imágenes para Sistema Web
+
+Estimado equipo de Marketing,
+
+Espero que este mensaje les encuentre bien. Me dirijo a ustedes en relación con un proyecto de sistema que estamos trabajando. 
+Necesitamos su apoyo para crear dos imágenes que serán utilizadas en la interfaz de usuario.
+
+Las imágenes que necesitamos son las siguientes:
+
+1)Imagen de encabezado para pantalla de "Login"
+2)Imagen de encabezado de la pantalla de "Index" 
+
+
+Se solicitan las imágenes en formato digital de alta resolución (preferiblemente en .png) y adaptadas para su uso en un entorno web.
+Imagen de Login ( 3000 x 600 píxeles). Imagen de Index ( 3000 x 1000 píxeles y otra version con : 3840 x 1356)
+
+Orientación creativa: Estamos abiertos a sugerencias creativas, tomando en cuenta elementos como:  personal laborando y/o entornos de Tableros de control, ademas de los logos de Mendoza Firm.
+
+Agradeceríamos mucho su colaboración en este proyecto. Por favor, háganos saber si necesitan más detalles o si hay alguna especificación adicional que debamos tener en cuenta.
+
+
+
+Quedamos atentos a su confirmación y a la recepción de las imágenes. ¡Muchas gracias por su ayuda!
+
+Saludos cordiales,
+
+[Tu nombre]
+[Tu cargo]
+[Nombre de la empresa]
+[Información de contacto]
+    
+📌
+📌
+
+
+16.04.24
+
+📌	Obtener el valor de link_payment_receipt
+📌 Buscar el character $
+📌 obtener la cifra correspondiente. 
+📌 Obtener el valor del select 
+📌 Y validar si 
+📌 247 y 1  son seleccionados
+📌 197 y 2 son seleccionados 
+📌 150 y 3 son seleccionados 
+
+
+
+
+
+11.04.24
+
+📌	I´m gonna update the table of xusers
+📌  I'm gonna create one one user: sa    paswword: sa
+📌	and one user for the first sales man 
+📌	cat_employees   64 Vorago Balam  sa 
+					1  Adriana Dominguez
+					
+					sa			sa890	
+					adominguez  a890			   
+
+📌	One route
+	one layaout
+	one form
+	one controller   UserxController 
+	one model
+	one small image for the login and without foooter
+	
+
+
+📌
+📌
+
+
+08.04.24
+
+Buen día
+ 
+ En el depto de Business Intelligence se estara implementando un programa en una maquina virtual de Microsoft Azure, 
+ la cual insertara información en la base de datos que el depto. de Marqueting tuvo a bien crearnos.
+ 
+ Dado que el equipo virtual de azure tiene una IP externa, les solicitamos de una manera muy atenta nos brinden apoyo para configurar
+ lo necesario en el servidor de base de datos con la finalidad de que "Azure" pueda conectarse e iteracturar con la base de datos antes mencionada.
+ 
+ 
+ Sin otro particular por el momento reciban un afable saludo.
+
+atte: Jaissiel Vázquez Islas
+
+
+05.04.24
+
+
+✔  Case descriptio de varchar200 a un tipo text , en la tabla de api_only_leads_status_report
+📌
+📌
+
+Este es un ejemplo del campo de Link recibo de pago
+habria que validar que esta información corresponda con lo que se seleccione en el select de costo de la consulta.
+
+Payment Receipt	$197.00 The Mendoza Law Firm LLC 601 Pennsylvania Ave. NW Ste. 900 Washington , 
+District Of Columbia 20004 (915) 228-3549  	Account Holder MARIA ANTONIA PEREZ ORTIZ 80229 Payment Summary	  
+Account:	Operating/ATTORNEY FEES Reference:	MARIA ANTONIA PEREZ ORTIZ / (720) 993-7689 / OEDR  	  
+Amount Paid:	$197.00 Payment Method:	VISA Card Number:	************4214 Entry Mode:	
+Manual Auth Code:	096706 Payment Date:	April 01, 2024 05:24 pm Transaction Id:	105701834 
+
+Link law ruler
+https://mendozafirm.lawruler.com/update-lead.aspx?lead=683580
+
+Validar que el numero de lead sea de 6 digitos.
+
+
+02.04.24
+
+
+✔1 agregar lead. en el formulario de ventas.
+✔2 Validaciones de campos obligatorios , primero validaciones javascript y luego validaciones laravel. 
+✔3  Crear la tabla de SOL PI y adecuar las otras de los APIS
+📌	Exportar la información real de los empleados.
+📌	Instalar y Probar el formulario ahora en el servidor real.
+✔	La tabla de SOL si sera nueva
+📌	Request the installation of PowerBI
+📌* Colocar que se grabe la ip desde donde se esta grabando el formulario
+📌* Crear una consulta de tipo join que me permita ver los valores correspondientes y 
+📌*	 Hacer mención  k si bien ya se termino todo lo de customer services, los datos los estoy subiendo y depurando manualmente
+📌*	 Hacer una intranet, para opener en donde se puedan mostrar pdfs de no se que...
+📌	Yes I will connect me to github
+📌	como se valida k el pago k pone openers, si corresponde a la realidad
+📌	Hacer los tableros de control con power BI, uno sencillo a partir de lo que se capture del primer formulario
+📌 Hacer una simulación de liberación de power BI, tal vez ya incrustado en una pagina web.
+📌 Hacer una presentación ejecutiva
+📌 Hacer una proyeccción a partir de los datos obtenidos 
+📌	Dar una capacitación de como capturar en mi formulario y como leer mi tablero de control .
+
+✔	Add option of : Seleccione una opción. for every select
+📌	Agregar guardar IP
+✔	I'm gonna to put validation of mandatory for link law ruler and link recibo de pago.
+✔	Y crear las tablas
+📌	Crear la modificación de ventas.
+📌	Ver como caen las ventas del form de cristian
+
+
+
+
+
+
+ 01.04.24
+
+ Validaciones en el formulario
+ ✔️Hojas de excel con Ema
+ ✔️La tabla de proyecto ya esta en el servidor
+ 
+ 
+ agregar el lead en el formulario. 
+ 
+📌	More Forms,for insert
+✔️	I need speak with Ema about his google sheets
+📌	
+
+✔️	Send to first hour, mail for subdomain.
+📌* I need upload this release to the real server
+📌* It will be necesary validations
+
+📌*	 De donde podemos obtener los datos de empleados , agentes cerradores?
+
+📌*	 Hacer pruebas
+
+
+📌*	 PNL profit state 
+📌* sistema k funcione para clientes y asesores, call center de unlimited 
+		sojo 
+		flujos internos, 
+
+	
+ 28.03.24
+ 
+ ✔️	I'll add two columns in the table: api_callcenter_agents_metrics:  month int 2, year int 4, AgentId varchar,  UserId int
+ ✔️ I'm gonna take like example the StoreW products - create.blade.php , yes because this example have select objects
+ ✔️	 Make : create.blade.php
+ ✔️	Show : create.blade.php
+ ✔️ Execute 
+ 
+▓ ✔️ Table:   fact_sales        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+	
+	id
+	lead
+	cat_employees_2_id
+	
+	* cat_employees_id				Nombre del vendedor  quien cierra la venta
+	* cat_employees_3_id			Nombre del vendedor con quiense comparte - messenger tem
+	* link_lawruler					insertar link de law ruler
+	* cat_type_process_id			Tipo de tramite   vawa, vista u etc
+	* cat_client_id					Nombre del cliente
+	* link_payment_receipt			Recibo de pago
+	* consultation_cost_id			Monto de la consulta
+	
+	sale_date
+	day
+	month
+	year
+	active
+	observations
+	created_at
+	updated_at
+	
+	
+▓ ✔️ Table:   cat_type_process        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓	
+
+	id
+	description
+	observations
+	active
+	created_at
+	updated_at
+	
+▓ ✔️ Table:   cat_consultation_cost        ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓		
+
+	id
+	consultation_cost
+	commissions
+	observations
+	active
+	created_at
+	updated_at
+
+▓ ✔️ Table:   cat_employees       ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+
+		id
+		name
+		last_name
+		second_last_name
+		email
+		cat_type_employees_id
+		active
+		created_at
+		updated_at
+
+
+	
+ 
+ http://business_intelligence_system.test/sales   ok good 
+ 
+ call report  esto es de Ema 
+ 
+ Solicitar un subdominio para poder ejecutar laravel 11, con copia para abiagil
+ 
+ Buen dia
+ 
+ Debido a que en el depto de Business Intelligence se va a desarrollar un sistema en ambiente web para la consulta de distintos datos relacionados a las actividades de Mendoza Firm.
+ 
+ Por medio de este conducto y de una manera muy atenta solicitamos su apoyo para la creación de un subdominio, en el cual sea posible la ejecución del framework Laravel en su 
+ version 10.
+ 
+ Cabe mencionar que el anterior sitio FTP ya no será necesario.
+ 
+ Solo requerimos uno siguiente el espacio para subir archivos via FTP en relación al nuevo subdominio. 
+ 
+ Sin más por el momento reciban un cordial saludo.
+
+atte: Jaissiel Vázquez Islas
+ 
+ 
+ PI 
+ Inmigración
+ Univisión
+ DAZN
+ 
+ ✔️27.03.24
+ ✔️	Install Composer
+ ✔️	Install Laravel
+ ✔️	I wanna develop Main page,
+ ✔️	main menu.
+ ✔️	I need main img, more logos, what colors? 
+ ✔️(*1)	First I will configure the system in my pc (Virtual host)
+ ✔️	Download my new examples 
+ ✔️Check the example of storeW
+ ✔️Create all container, create all structure
+ ✔️Create new resourceController for sales 
+ ✔️Create virtual host.
+ 
+ 
+ ✔️	I will need share my examples
+ ✔️ I need to fill the catalogs
+ ✔️ I'll check the ftp space 
+ ✔️(*2) I′m gonna send mail for request laravel space
+ ✔️ Que tanto más va a abarcar la bd. 
+ ?? Dirigir la captura de las apis.
+ ??	
+ 
+ 
+ 
+ Almacenar registros con información real para las tablas de catalogos.
+ 
+ 
+ Instalación de Composer, instalacion de laravel, configuracion de un virtual host en mi equipo para comenzar a desarrollar
+ las pantallas de contenedor de pagina principal, menu princial y formulario de Registro de Venta MLF.
+ 
+ Instalación de FTP filezilla  y solicitar espacio de desarrollo Laravel a Roberto desarrollador la pagina web.
+ 
+ 
+ 
+ 22.03.24
+ ??	Install Composer
+ ??	Install Laravel
+ ??	I wanna develop Main page,
+	main menu.
+	I need main img, more logos, what colors? 
+ ??	First I will configure the system in my pc (Virtual host)
+ ??	I will need share my examples
+ ?? I need to fill the catalogs
+ ??I'll check the ftp space 
+ ??I′m gonna send mail for request laravel space
+ ?? Que tanto más va a abarcar la bd. 
+ ?? Dirigir la captura de las apis.
+ ??	Hacer los tableros de control con power BI, uno sencillo a partir de lo que se capture del primer formulario
+ ?? Hacer una simulación de liberación de power BI, tal vez ya incrustado en una pagina web.
+ ?? Hacer una presentación ejecutiva
+ ?? Hacer una proyeccción a partir de los datos obtenidos 
+ ??	Dar una capacitación de como capturar en mi formulario y como leer mi tablero de control .
+ ??
