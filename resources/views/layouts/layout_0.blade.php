@@ -20,6 +20,13 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Griffy&display=swap" rel="stylesheet">    <style>    .font__Griffy {        font-family: 'Griffy', serif;        font-size: 20px;    }    </style>
     
+
+    <!-- React 18 desde CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel standalone para poder usar JSX (IMPRESCINDIBLE) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <!--+----------+----------------+-----------------+------------------------------------+-------------------------------+-------------------------+--------------+------------+ -->		
 <body>
