@@ -1,6 +1,6 @@
 
 <HR>
-<p align="center"> <Strong> Sistema de Business Intelligence para la administración, almacenamiento y medición de ventas / leads con el proposito de generar tableros de control con echarts.js y PowerBI </Strong></p>
+<p align="center"> <Strong> Sistema de Business Intelligence para la administración, almacenamiento y medición de ventas / leads con el proposito de generar tableros de control con Laravel, React,  echarts.js y PowerBI </Strong></p>
 <HR>
 
 
